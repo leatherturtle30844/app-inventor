@@ -1,0 +1,96 @@
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+
+class Usuario(
+    val nome: String,
+    val id: Int,
+    val email: String,
+    var livroEmprestado: Livro? = null
+) {
+    fun emprestarLivro(biblioteca: Biblioteca, tituloLivro: String) {
+        val livro = biblioteca.buscarLivro(tituloLivro)
+        val dataHoraAtual = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+        
+        if (livro != null && livro.disponivel) {
+            biblioteca.emprestarLivroParaUsuario(livro, this)
+            livroEmprestado = livro
+            println("[$dataHoraAtual] $nome emprestou o livro: ${livro.titulo}")
+        } else {
+            println("[$dataHoraAtual] O livro '$tituloLivro' não está disponível ou não foi encontrado.")
+        }
+    }
+
+    fun devolverLivro(biblioteca: Biblioteca) {
+        val dataHoraAtual = LocalDateTime.now(ZoneId.of("America/Sao_Paulo")).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+        
+        if (livroEmprestado != null) {
+            biblioteca.devolverLivro(livroEmprestado!!)
+            val titulo = livroEmprestado?.titulo ?: "Livro desconhecido"
+            livroEmprestado = null
+            println("$nome devolveu o livro: $titulo")
+        } else {
+            println("[$dataHoraAtual] $nome não tem nenhum livro emprestado.")
+        }
+    }
+}
+
+class Livro(
+    val titulo: String,
+    val autor: String,
+    val anoPublicacao: Int,
+    val isbn: String,
+    var disponivel: Boolean = true
+) {
+    fun adicionarLivro() {
+        println("Nome do livro: $titulo")
+        println("ISBN do livro: $isbn")
+        println("Autor do livro: $autor")
+        println("Disponibilidade: ${if (disponivel) "Disponível" else "Indisponível"}")
+    }
+}
+
+class Biblioteca(
+    val nome: String,
+    val endereco: String,
+    val gerente: String,
+    val livros: MutableList<Livro>
+) {
+    fun exibirInformacoes() {
+        println("Nome da biblioteca: $nome")
+        println("Endereço da biblioteca: $endereco")
+        println("Gerente da biblioteca: $gerente")
+        println("Número de livros: ${livros.size}")
+    }
+
+    fun buscarLivro(titulo: String): Livro? {
+        return livros.find { it.titulo == titulo }
+    }
+
+    fun emprestarLivroParaUsuario(livro: Livro, usuario: Usuario) {
+        if (livro.disponivel) {
+            livro.disponivel = false  
+        }
+    }
+
+    fun devolverLivro(livro: Livro) {
+        livro.disponivel = true  
+    }
+}
+
+fun main() {
+    val livro1 = Livro("Sherlock Holmes", "Arthur C. Doyle", 1988, "978-85-325-7310")
+    val livro2 = Livro("Dom Casmurro", "Machado de Assis", 1899, "978-85-359-0272")
+
+    val biblioteca1 = Biblioteca("Biblioteca Megalomania", "Rua das Flores, 123", "João Pereira", mutableListOf(livro1, livro2))
+    
+    biblioteca1.exibirInformacoes()
+    livro1.adicionarLivro()
+    livro2.adicionarLivro()
+
+    val usuario1 = Usuario("Maria Silva", 1, "maria@example.com")
+    
+    usuario1.emprestarLivro(biblioteca1, "Sherlock Holmes")  
+    usuario1.emprestarLivro(biblioteca1, "Dom Casmurro")    
+    usuario1.devolverLivro(biblioteca1)
+}
