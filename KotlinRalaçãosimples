@@ -1,0 +1,64 @@
+class Usuario(
+    val nome: String,
+    val id: Int,
+    val email: String,
+    var livroEmprestado: Livro? = null
+) {
+    fun emprestarLivro(livro: Livro) {
+        if (livro.disponivel) {
+            livro.disponivel = false
+            livroEmprestado = livro
+            println("$nome emprestou o livro: ${livro.titulo}")
+        } else {
+            println("O livro ${livro.titulo} não está disponível.")
+        }
+    }
+}
+
+class Livro(
+    val titulo: String,
+    val autor: String,
+    val anoPublicacao: Int,
+    val isbn: String,
+    var disponivel: Boolean = true
+) {
+    fun adicionarLivro() {
+        println("Nome do livro: $titulo")
+        println("ISBN do livro: $isbn")
+        println("Autor do livro: $autor")
+    }
+}
+
+class Biblioteca(
+    val nome: String,
+    val endereco: String,
+    val gerente: String,
+    val numero: Int
+) {
+    fun exibirInformacoes() {
+        println("Nome da biblioteca: $nome")
+        println("Endereço da biblioteca: $endereco")
+        println("Gerente da biblioteca: $gerente")
+        println("Número de livros: $numero")
+    }
+
+    fun emprestarLivro(usuario: Usuario, livro: Livro) {
+        usuario.emprestarLivro(livro)
+    }
+}
+
+fun main() {
+    val biblioteca1 = Biblioteca("Biblioteca Central", "Rua das Flores, 123", "João Pereira", 1000)
+    val livro1 = Livro("Sherlock Holmes", "Arthur C. Doyle", 1988, "978-85-325-7310")
+    val livro2 = Livro("Dom Casmurro", "Machado de Assis", 1899, "978-85-359-0272")
+
+    biblioteca1.exibirInformacoes()
+    livro1.adicionarLivro()
+    livro2.adicionarLivro()
+
+    val usuario1 = Usuario("Maria Silva", 1, "maria@example.com")
+
+    // Emprestando um livro
+    biblioteca1.emprestarLivro(usuario1, livro1) // Maria empresta Sherlock Holmes
+    biblioteca1.emprestarLivro(usuario1, livro2) // Tentativa de emprestar Dom Casmurro
+}
