@@ -1,0 +1,89 @@
+class Usuario(  
+    val nome: String,  
+    val id: Int,  
+    val email: String,  
+    var livroEmprestado: Boolean = false  
+) {  
+    fun emprestarLivro(livro: Livro): Boolean {  
+        return if (livro.disponivel) {  
+            livro.disponivel = false  
+            livroEmprestado = true  
+            println("Livro '${livro.titulo}' emprestado para o usuário $nome")  
+            true  
+        } else {  
+            println("Livro '${livro.titulo}' não está disponível.")  
+            false  
+        }  
+    }  
+
+    fun devolverLivro(livro: Livro) {  
+        if (livroEmprestado) {  
+            livro.disponivel = true  
+            livroEmprestado = false  
+            println("Livro '${livro.titulo}' devolvido pelo usuário $nome")  
+        } else {  
+            println("Usuário $nome não possui livros emprestados.")  
+        }  
+    }  
+}  
+
+class Livro(  
+    val titulo: String,  
+    val autor: String,  
+    val anoPublicacao: Int,  
+    val isbn: String,  
+    var disponivel: Boolean = true  
+) {  
+    fun adicionarLivro() {  
+        println("Nome do livro: $titulo")  
+        println("ISBN do livro: $isbn")  
+        println("Autor do livro: $autor")  
+    }  
+}  
+
+class Biblioteca(  
+    val nome: String,  
+    val endereco: String,  
+    val gerente: String,  
+    val livros: MutableList<Livro> = mutableListOf()  
+) {  
+    fun exibirInformacoes() {  
+        println("Nome da biblioteca: $nome")  
+        println("Endereço da biblioteca: $endereco")  
+        println("Gerente da biblioteca: $gerente")  
+        println("Número de livros: ${livros.size}")  
+    }  
+    
+    fun adicionarLivro(livro: Livro) {  
+        livros.add(livro)  
+        println("Livro '${livro.titulo}' adicionado à biblioteca.")  
+    }  
+
+    fun emprestarLivro(usuario: Usuario, livro: Livro) {  
+        if (livros.contains(livro)) {  
+            if (usuario.emprestarLivro(livro)) {  
+                println("Empréstimo realizado com sucesso.")  
+            } else {  
+                println("Não foi possível realizar o empréstimo.")  
+            }  
+        } else {  
+            println("Livro '${livro.titulo}' não está disponível na biblioteca.")  
+        }  
+    }  
+}  
+
+fun main() {  
+    val biblioteca1 = Biblioteca("Biblioteca Central", "Rua das Flores, 123", "João Pereira")  
+    val livro1 = Livro("Sherlock Holmes", "Arthur C. Doyle", 1988, "978-85-325-7310")  
+    val livro2 = Livro("Dom Casmurro", "Machado de Assis", 1899, "978-85-359-0272")  
+    
+    biblioteca1.adicionarLivro(livro1)  
+    biblioteca1.adicionarLivro(livro2)  
+    
+    biblioteca1.exibirInformacoes()  
+    
+    val usuario1 = Usuario("Maria Silva", 1, "maria@example.com")  
+    
+    biblioteca1.emprestarLivro(usuario1, livro1)  
+    usuario1.devolverLivro(livro1)  
+}
