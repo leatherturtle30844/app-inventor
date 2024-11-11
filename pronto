@@ -1,0 +1,101 @@
+import java.time.LocalDate
+
+class Carro(
+    val modelo: String,
+    val tipo: String,
+    val marca: String,
+    val ano: Int,
+    var disponivel: Boolean,
+    val valorDiaria: Int
+) {
+    fun alterarStatusDisponibilidade(status: Boolean) {
+        disponivel = status
+    }
+}
+
+class Cliente(
+    val nome: String,
+    val cpf: Int,
+    val telefone: Int,
+    val documentoIdentidade: String,
+    var carroAlugado: Boolean = false
+)
+
+class Locacao(
+    val dataDeInicio: LocalDate,
+    val dataDeFim: LocalDate,
+    val clienteLT: MutableList<Cliente> = mutableListOf(),
+    val carroLT: MutableList<Carro> = mutableListOf()
+) {
+    fun adicionarCliente(cliente: Cliente) {
+        clienteLT.add(cliente)
+    }
+
+    fun adicionarCarro(carro: Carro) {
+        carroLT.add(carro)
+    }
+
+    fun realizarLocacao(cliente: Cliente, carro: Carro) {
+        if (!carro.disponivel) {
+            println("Carro não disponível para locação.")
+            return
+        }
+        carro.alterarStatusDisponibilidade(false)
+        cliente.carroAlugado = true
+        println("Locação realizada com sucesso para ${cliente.nome}.")
+    }
+
+    fun calcularValorTotal(carro: Carro): Int {
+        val dias = dataDeFim.dayOfYear - dataDeInicio.dayOfYear + 1
+        return dias * carro.valorDiaria
+    }
+
+    fun realizarDevolucao(cliente: Cliente, carro: Carro) {
+        if (!cliente.carroAlugado) {
+            println("Cliente não possui carro alugado.")
+            return     
+        }
+
+        cliente.carroAlugado = false
+        carro.alterarStatusDisponibilidade(true)
+
+        println("Devolução realizada com sucesso para ${cliente.nome}!")
+    }
+
+    fun exibirInformacoes() {
+        println("Informações da Locação:")
+        println("Data de Início: $dataDeInicio")
+        println("Data de Fim: $dataDeFim")
+        println("Clientes: ${clienteLT.joinToString { it.nome }}")
+        println("Carros: ${carroLT.joinToString { it.modelo }}")
+    }
+}
+
+fun main() {
+    // Usando LocalDate para as datas
+    val locacao = Locacao(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10))
+
+    val cliente1 = Cliente("João Silva", 123456789, 987654321, "ISBN123456")
+    val cliente2 = Cliente("Maria Oliveira", 987654321, 123456789, "ISBN654321")
+
+    val carro1 = Carro("Fusca", "Clássico", "Volkswagen", 1970, true, 50)
+    val carro2 = Carro("Civic", "Sedan", "Honda", 2022, true, 100)
+
+    locacao.adicionarCliente(cliente1)
+    locacao.adicionarCliente(cliente2)
+
+    locacao.adicionarCarro(carro1)
+    locacao.adicionarCarro(carro2)
+
+    locacao.exibirInformacoes()
+
+    // Realizando uma locação
+    locacao.realizarLocacao(cliente1, carro1)
+
+    // Calculando o valor total da locação
+    val valorTotal = locacao.calcularValorTotal(carro1)
+    println("Valor total da locação: $$valorTotal")
+
+    // Realizando a devolução do carro
+    locacao.realizarDevolucao(cliente1, carro1)
+}
