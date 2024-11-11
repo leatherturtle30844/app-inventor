@@ -17,8 +17,10 @@ class Cliente(
     val nome: String,
     val cpf: Int,
     val telefone: Int,
+    val carteira: String, // Alterado para String
     val documentoIdentidade: String,
-    var carroAlugado: Boolean = false
+    var carroAlugado: Boolean = false,
+    val carteiraValida: Boolean // Novo atributo para verificar se a carteira é válida
 )
 
 class Locacao(
@@ -38,6 +40,10 @@ class Locacao(
     fun realizarLocacao(cliente: Cliente, carro: Carro) {
         if (!carro.disponivel) {
             println("Carro não disponível para locação.")
+            return
+        }
+        if (!cliente.carteiraValida || cliente.numeroCarteira.length != 10) { 
+            println("Cliente ${cliente.nome} não possui carteira de motorista válida ou o número da carteira é inválido.")
             return
         }
         carro.alterarStatusDisponibilidade(false)
@@ -75,8 +81,8 @@ fun main() {
     // Usando LocalDate para as datas
     val locacao = Locacao(LocalDate.of(2023, 1, 1), LocalDate.of(2023, 1, 10))
 
-    val cliente1 = Cliente("João Silva", 123456789, 987654321, "ISBN123456")
-    val cliente2 = Cliente("Maria Oliveira", 987654321, 123456789, "ISBN654321")
+    val cliente1 = Cliente("João Silva", 123456789, 987654321, "ISBN123456", "RG123456", carteiraValida = true)
+    val cliente2 = Cliente("Maria Oliveira", 987654321, 123456789, "ISBN654321", "RG654321", carteiraValida = false)
 
     val carro1 = Carro("Fusca", "Clássico", "Volkswagen", 1970, true, 50)
     val carro2 = Carro("Civic", "Sedan", "Honda", 2022, true, 100)
@@ -90,7 +96,8 @@ fun main() {
     locacao.exibirInformacoes()
 
     // Realizando uma locação
-    locacao.realizarLocacao(cliente1, carro1)
+    locacao.realizarLocacao(cliente1, carro1) // Deve ser bem-sucedido
+    locacao.realizarLocacao(cliente2, carro1) // Deve falhar devido à carteira inválida
 
     // Calculando o valor total da locação
     val valorTotal = locacao.calcularValorTotal(carro1)
