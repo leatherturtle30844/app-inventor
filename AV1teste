@@ -1,0 +1,162 @@
+data class Produto(val nome: String, var preco: Double, var estoque: Int) {
+    fun adicionarAoCarrinho(carrinho: Carrinho, quantidade: Int) {
+        if (quantidade <= estoque) {
+            carrinho.adicionarProduto(this, quantidade)
+            estoque -= quantidade
+        } else {
+            println("Estoque insuficiente para o produto $nome.")
+        }
+    }
+}
+
+class Cliente(val nome: String, val senha: String) {
+    fun criarPedido(carrinho: Carrinho): Pedido {
+        return Pedido(carrinho, this)
+    }
+}
+
+class Carrinho {
+    private val produtos = mutableMapOf<Produto, Int>()
+
+    fun adicionarProduto(produto: Produto, quantidade: Int) {
+        produtos[produto] = produtos.getOrDefault(produto, 0) + quantidade
+    }
+
+    fun calcularValorTotal(): Double {
+        return produtos.entries.sumOf { (produto, quantidade) -> produto.preco * quantidade }
+    }
+
+    fun getProdutos(): Map<Produto, Int> {
+        return produtos
+    }
+
+    fun listarProdutos() {
+        if (produtos.isEmpty()) {
+            println("Carrinho vazio.")
+        } else {
+            produtos.forEach { (produto, quantidade) ->
+                println("${produto.nome} - Quantidade: $quantidade - Preço: R$ ${"%.2f".format(produto.preco * quantidade)}")
+            }
+        }
+    }
+}
+
+class Pedido(private val carrinho: Carrinho, private val cliente: Cliente) {
+    fun gerarRecibo(metodoPagamento: String): String {
+        val sb = StringBuilder("Recibo do Pedido:\n")
+        sb.append("Cliente: ${cliente.nome}\n")
+        sb.append("Método de Pagamento: $metodoPagamento\n")
+        sb.append("Produtos Comprados:\n")
+        carrinho.getProdutos().forEach { (produto, quantidade) ->
+            sb.append("${produto.nome} - Quantidade: $quantidade - Preço: R$ ${"%.2f".format(produto.preco * quantidade)}\n")
+        }
+        sb.append("Total: R$ ${"%.2f".format(carrinho.calcularValorTotal())}\n")
+        return sb.toString()
+    }
+}
+
+class Sistema {
+    private val produtos = mutableListOf<Produto>()
+    private val clientes = mutableListOf<Cliente>()
+
+    init {
+        clientes.add(Cliente("cliente1", "senha123"))
+    }
+
+    fun adicionarProduto(produto: Produto) {
+        produtos.add(produto)
+    }
+
+    fun listarProdutos() {
+        if (produtos.isEmpty()) {
+            println("Nenhum produto disponível.")
+        } else {
+            produtos.forEach { produto ->
+                println("${produto.nome} - Preço: R$ ${"%.2f".format(produto.preco)} - Estoque: ${produto.estoque}")
+            }
+        }
+    }
+
+    fun iniciar() {
+        println("Bem-vindo à loja online de equipamentos eletrônicos!")
+        
+        var cliente: Cliente? = null
+        while (cliente == null) {
+            println("Digite seu nome para fazer login:")
+            val nomeCliente = readLine() ?: return
+            println("Digite sua senha:")
+            val senhaCliente = readLine() ?: return
+            
+            cliente = clientes.find { it.nome == nomeCliente && it.senha == senhaCliente }
+            if (cliente == null) {
+                println("Nome ou senha incorretos. Tente novamente.")
+            } else {
+                println("Login bem-sucedido! Olá, ${cliente.nome}.")
+            }
+        }
+
+        var opcao: Int
+        do {
+            println("Escolha uma opção:")
+            println("1. Mostrar catálogo de produtos")
+            println("2. Criar pedido")
+            println("3. Sair")
+            opcao = readLine()?.toIntOrNull() ?: 0
+
+            when (opcao) {
+                1 -> listarProdutos()
+                2 -> {
+                    val carrinho = Carrinho()
+                    var continuarPedido = true
+                    while (continuarPedido) {
+                        println("Escolha um produto para adicionar ao carrinho (ou 'sair' para finalizar):")
+                        listarProdutos()
+                        val produtoNome = readLine()
+                        if (produtoNome == "sair") {
+                            continuarPedido = false
+                        } else {
+                            val produto = produtos.find { it.nome.equals(produtoNome, ignoreCase = true) }
+                            if (produto != null) {
+                                println("Digite a quantidade:")
+                                val quantidade = readLine()?.toIntOrNull() ?: 0
+                                if (quantidade > 0) {
+                                    produto.adicionarAoCarrinho(carrinho, quantidade)
+                                } else {
+                                    println("Quantidade inválida. Tente novamente.")
+                                }
+                            } else {
+                                println("Produto não encontrado.")
+                            }
+                        }
+                    }
+
+                    // Escolher método de pagamento
+                    println("Escolha o método de pagamento:")
+                    println("1. Cartão de Crédito")
+                    println("2. Boleto")
+                    println("3. PayPal")
+                    val metodoPagamento = when (readLine()?.toIntOrNull()) {
+                        1 -> "Cartão de Crédito"
+                        2 -> "Boleto"
+                        3 -> "PayPal"
+                        else -> {
+                            println("Método de pagamento inválido. Usando 'Cartão de Crédito' como padrão.")
+                            "Cartão de Crédito"
+                        }
+                    }
+
+                    // Processar pagamento e gerar recibo
+                    if (carrinho.calcularValorTotal() > 0) {
+                        println("Processando pagamento...")
+                        val pedido = cliente.criarPedido(carrinho)
+                        println(pedido.gerarRecibo(metodoPagamento))
+                    } else {
+                        println("Não há produtos no carrinho para pagamento.")
+                    }
+                }
+                3 -> println("Saindo do sistema. Até logo!")
+                else -> println("Opção inválida. Tente novamente.")
+            }
+        } while (opcao != 3)
+    }
+}
