@@ -72,10 +72,9 @@ class Pedido(val carrinho: Carrinho) {
 
 class Sistema {
     private val produtos = mutableListOf<Produto>()
-    private val usuarios = mutableMapOf<String, String>() // Map para armazenar usuários e senhas
+    private val usuarios = mutableMapOf<String, String>() 
 
     init {
-        // Adicionando alguns usuários para simulação
         usuarios["usuario1"] = "senha1"
         usuarios["usuario2"] = "senha2"
     }
