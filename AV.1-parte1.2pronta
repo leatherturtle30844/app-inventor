@@ -51,12 +51,18 @@ class Pedido(val carrinho: Carrinho) {
         println("3. PayPal")
         val opcaoPagamento = readLine()?.toIntOrNull()
         when (opcaoPagamento) {
-            1 ->println("Pagamento realizado com Cartão de Crédito.")
-            println("Nota: O pagamento será processado em até 3 dias úteis.")
-            2 -> println("Pagamento realizado com Boleto.")
-            println("Nota: O pagamento deve ser realizado até a data de vencimento do boleto.")
-            3 -> println("Pagamento realizado com PayPal.")
-            println("Nota: O pagamento será processado imediatamente.")
+            1 -> {
+                println("Pagamento realizado com Cartão de Crédito.")
+                println("Nota: O pagamento será processado em até 3 dias úteis.")
+            }
+            2 -> {
+                println("Pagamento realizado com Boleto.")
+                println("Nota: O pagamento deve ser realizado até a data de vencimento do boleto.")
+            }
+            3 -> {
+                println("Pagamento realizado com PayPal.")
+                println("Nota: O pagamento será processado imediatamente.")
+            }
             else -> println("Método de pagamento inválido.")
         }
     }
