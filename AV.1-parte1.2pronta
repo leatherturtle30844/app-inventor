@@ -1,0 +1,164 @@
+data class Produto(val nome: String, var preco: Double, var quantidade: Int) {
+    fun adicionarAoCarrinho(carrinho: Carrinho, quantidade: Int) {
+        if (quantidade <= this.quantidade) {
+            carrinho.adicionarProduto(this, quantidade)
+            this.quantidade -= quantidade
+            println("Adicionado ao carrinho: $quantidade unidade(s) de ${this.nome}.")
+        } else {
+            println("Estoque insuficiente para o produto ${this.nome}.")
+        }
+    }
+}
+
+class Cliente(val nome: String)
+
+class Carrinho {
+    private val produtos: MutableList<Pair<Produto, Int>> = mutableListOf()
+
+    fun adicionarProduto(produto: Produto, quantidade: Int) {
+        produtos.add(Pair(produto, quantidade))
+    }
+
+    fun calcularValorTotal(): Double {
+        return produtos.sumOf { (produto, quantidade) -> produto.preco * quantidade }
+    }
+
+    fun listarProdutos(): String {
+        return if (produtos.isEmpty()) {
+            "Carrinho vazio."
+        } else {
+            produtos.joinToString("\n") { (produto, quantidade) ->
+                "${produto.nome} - $quantidade unidade(s) - Preço: R$ ${produto.preco}"
+            }
+        }
+    }
+}
+
+class Pedido(val carrinho: Carrinho) {
+    fun gerarRecibo(): String {
+        val total = carrinho.calcularValorTotal()
+        return "Recibo do Pedido:\n" +
+               "-----------------------------------\n" +
+               "Produtos:\n" +
+               "${carrinho.listarProdutos()}\n" +
+               "Total: R$ $total"
+    }
+
+    fun selecionarMetodoPagamento() {
+        println("Selecione o método de pagamento:")
+        println("1. Cartão de Crédito")
+        println("2. Boleto")
+        println("3. PayPal")
+        val opcaoPagamento = readLine()?.toIntOrNull()
+        when (opcaoPagamento) {
+            1 ->println("Pagamento realizado com Cartão de Crédito.")
+            println("Nota: O pagamento será processado em até 3 dias úteis.")
+            2 -> println("Pagamento realizado com Boleto.")
+            println("Nota: O pagamento deve ser realizado até a data de vencimento do boleto.")
+            3 -> println("Pagamento realizado com PayPal.")
+            println("Nota: O pagamento será processado imediatamente.")
+            else -> println("Método de pagamento inválido.")
+        }
+    }
+}
+
+class Sistema {
+    private val produtos = mutableListOf<Produto>()
+    private val usuarios = mutableMapOf<String, String>() // Map para armazenar usuários e senhas
+
+    init {
+        // Adicionando alguns usuários para simulação
+        usuarios["usuario1"] = "senha1"
+        usuarios["usuario2"] = "senha2"
+    }
+
+    fun adicionarProduto(produto: Produto) {
+        produtos.add(produto)
+    }
+
+    fun mostrarCatalogo() {
+        println("Catálogo de Produtos:")
+        produtos.forEachIndexed { index, produto ->
+            println("${index + 1}. ${produto.nome} - Preço: R$ ${produto.preco} - Estoque: ${produto.quantidade}")
+        }
+    }
+
+    fun login(): Cliente? {
+        println("Por favor, faça login.")
+        print("Nome de usuário: ")
+        val usuario = readLine() ?: return null
+        print("Senha: ")
+        val senha = readLine() ?: return null
+
+        return if (usuarios[usuario] == senha) {
+            println("Login bem-sucedido!")
+            Cliente(usuario)
+        } else {
+            println("Usuário ou senha incorretos.")
+            null
+        }
+    }
+
+    fun iniciar() {
+        println("Bem-vindo à loja online!")
+
+        val cliente = login() ?: return
+
+        while (true) {
+            println("\nMenu:")
+            println("(1) Mostrar catálogo de produtos")
+            println("(2) Criar pedido")
+            println("(3) Sair")
+            print("Escolha uma opção: ")
+            val opcao = readLine()?.toIntOrNull()
+
+            when (opcao) {
+                1 -> mostrarCatalogo()
+                2 -> {
+                    val carrinho = Carrinho()
+                    while (true) {
+                        mostrarCatalogo()
+                        print("Escolha um produto para adicionar ao carrinho (ou digite 0 para finalizar): ")
+                        val escolha = readLine()?.toIntOrNull()
+
+                        if (escolha == 0) {
+                            break
+                        }
+
+                        val produto = produtos.getOrNull(escolha?.minus(1) ?: -1)
+                        if (produto != null) {
+                            print("Quantas unidades deseja adicionar? ")
+                            val quantidade = readLine()?.toIntOrNull() ?: 0
+                            if (quantidade > 0) {
+                                produto.adicionarAoCarrinho(carrinho, quantidade)
+                            } else {
+                                println("Quantidade inválida.")
+                            }
+                        } else {
+                            println("Produto inválido.")
+                        }
+                    }
+
+                    // Criação do pedido
+                    val pedido = Pedido(carrinho)
+                    println("\n" + pedido.gerarRecibo())
+                    pedido.selecionarMetodoPagamento()
+                }
+                3 -> {
+                    println("Saindo do sistema. Até mais!")
+                    return
+                }
+                else -> println("Opção inválida.")
+            }
+        }
+    }
+}
+
+fun main() {
+    val sistema = Sistema()
+    sistema.adicionarProduto(Produto("Laptop", 3000.0, 10))
+    sistema.adicionarProduto(Produto("Smartphone", 1500.0, 20))
+    sistema.adicionarProduto(Produto("Tablet", 800.0, 15))
+    sistema.adicionarProduto(Produto("Fone de Ouvido", 200.0, 50))
+    sistema.iniciar()
+}
